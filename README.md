@@ -1,17 +1,40 @@
-# Aerial-Human-Detection
-Scale and Rotation-Robust Aerial Human Detection
-
 # Scale and Rotation-Robust Aerial Human Detection
 
-**Alex Eagles Tech | Computer Vision Task 3**
+**Alex Eagles | Task 3**
+
+![YOLO11](https://img.shields.io/badge/Model-YOLO11m-blue)
+![Dataset](https://img.shields.io/badge/Dataset-VisDrone-orange)
+![Score](https://img.shields.io/badge/Kaggle%20Public%20Score-0.79575-brightgreen)
+
+An experimental aerial human detection pipeline combining
+high-resolution inference, domain-specific fine-tuning,
+confidence optimization, and Weighted Boxes Fusion.
+
+**Best Kaggle Public Score: 0.79575**
+
+**Relative improvement over the initial baseline: 44.39%**
 
 ## 1. Project Overview
 
-This project investigates human detection under challenging aerial imaging conditions, including small object sizes, varying camera orientations, illumination changes, and different viewing angles.
+This project investigates human detection under challenging
+aerial imaging conditions, including small object sizes,
+arbitrary camera orientations, illumination changes,
+and different viewing angles.
 
-The objective is to develop a robust object detection pipeline for a 590-image competition benchmark without an official training dataset.
+The objective is to develop a robust object detection pipeline
+for a 590-image competition benchmark without an official
+training dataset.
 
-Rather than relying solely on a pretrained detector, the project follows an experimental approach to improve detection performance through high-resolution inference, confidence threshold optimization, domain-specific fine-tuning, and planned inference enhancement techniques.
+Eight experiments were conducted to investigate the impact
+of input resolution, confidence thresholds, domain-specific
+fine-tuning, rotation-based test-time augmentation,
+overlapping tiled inference, and model ensembling.
+
+The final approach combines COCO-pretrained and VisDrone
+fine-tuned YOLO11m models using Weighted Boxes Fusion.
+
+The best Kaggle public score increased from 0.55109 to
+0.79575, representing a relative improvement of 44.39%.
 
 ## 2. Key Challenges
 
@@ -51,18 +74,23 @@ The competition test images were excluded from model training and manual annotat
 
 ## 4. Methodology
 
-The project follows an iterative experimental pipeline:
+The project follows an iterative experimental approach:
 
 1. Establish a COCO-pretrained YOLO11m baseline.
-2. Analyze predicted bounding box sizes and confidence distributions.
-3. Evaluate the impact of increased input resolution.
-4. Construct an external aerial validation set.
-5. Implement a local approximation of the competition evaluation metric.
-6. Optimize the confidence threshold through systematic experiments.
-7. Fine-tune YOLO11m on VisDrone training images.
-8. Investigate rotation-based test-time augmentation and tiled inference.
+2. Analyze bounding box sizes and confidence distributions.
+3. Investigate high-resolution inference.
+4. Construct an external aerial validation set using VisDrone.
+5. Implement a local approximation of the competition metric.
+6. Optimize confidence thresholds through systematic searches.
+7. Fine-tune YOLO11m on aerial imagery.
+8. Investigate custom rotation-based test-time augmentation.
+9. Implement overlapping tiled inference.
+10. Combine pretrained and fine-tuned models using WBF.
+11. Conduct an extended fusion parameter search.
+12. Develop and test a standalone inference pipeline.
 
-Each experiment is compared against previous configurations to assess its contribution to detection performance.
+Model configurations were evaluated on external labeled
+validation images before competition submission.
 
 ## 5. Custom Evaluation Metric
 
@@ -152,48 +180,279 @@ The results suggest that the initial confidence threshold was overly restrictive
 
 ### Experiment 4 — Aerial Fine-tuning
 
-Status: In progress.
 
-YOLO11m is being fine-tuned on the VisDrone training split using transfer learning and domain-specific augmentation.
+YOLO11m was fine-tuned on the VisDrone training dataset
+to improve its adaptation to aerial human detection.
 
-Training configurations include:
+#### Training Configuration
 
-- Input resolution: 960
-- Training images: 6,471
-- Random rotation: ±180 degrees
-- Horizontal and vertical flipping
-- HSV augmentation
-- Scale and translation augmentation
-- Mosaic augmentation
-- Optimizer: AdamW
-- Initial learning rate: 0.0005
-- Random seed: 42
+| Parameter | Value |
+|---|---|
+| Base model | YOLO11m |
+| Training images | 6,471 |
+| Validation images | 548 |
+| Training resolution | 960 |
+| Batch size | 8 |
+| Reported epochs | 6 |
+| Training duration | Approximately 1 hour |
+| Optimizer | AdamW |
+| Initial learning rate | 0.0005 |
+| Random rotation | ±180 degrees |
+| Horizontal flip probability | 0.5 |
+| Vertical flip probability | 0.5 |
+| Mosaic probability | 0.3 |
+| Random seed | 42 |
+| Hardware | NVIDIA Tesla T4 |
 
-The trained model will be evaluated using the custom local metric before selecting the final inference configuration.
+The final epoch was partially completed due to the
+configured training time limit.
 
-## 8. Results
+#### Training Results
 
-| Experiment | Local Score | Kaggle Score |
+| Metric | Epoch 1 | Epoch 6 |
 |---|---:|---:|
-| E1 — Initial baseline | 0.266290 | 0.55109 |
-| E2 — High resolution | 0.499251 | Not submitted |
-| E3 — Confidence optimization | 0.633276 | **0.70867** |
-| E4 — Aerial fine-tuning | Pending | Pending |
-| E5 — Rotation TTA | Pending | Pending |
-| E6 — Tiled inference | Pending | Pending |
+| Box Loss | 2.520 | 2.115 |
+| Classification Loss | 2.002 | 1.437 |
+| DFL Loss | 1.205 | 1.044 |
+| Precision | 0.339 | 0.582 |
+| Recall | 0.278 | 0.419 |
+| mAP50 | 0.221 | 0.452 |
+| mAP50-95 | 0.0544 | 0.144 |
 
-### Current Best Performance
+The fine-tuned model was subsequently evaluated at an
+inference resolution of 1280 pixels using the custom
+blended F1 metric.
 
-- Initial Kaggle score: 0.55109
-- Best Kaggle score: 0.70867
-- Absolute improvement: 0.15758
-- Relative improvement: approximately 28.6%
+The optimal confidence threshold shifted from 0.04
+for the pretrained model to 0.15 after fine-tuning.
 
-These improvements were achieved before completing domain-specific fine-tuning.
+- Best local blended F1: 0.657784
+- Kaggle public score: 0.75743
 
-<img width="3064" height="423" alt="image" src="https://github.com/user-attachments/assets/1dec596c-b2c6-4927-8816-eaa21eec94ff" />
+Domain-specific fine-tuning improved both the local
+validation score and competition performance.
 
-*Competition score improvement from 0.55109 to 0.70867 through inference optimization.*
+<img width="2000" height="1000" alt="E4_training_loss" src="https://github.com/user-attachments/assets/1093548d-fbce-41d7-a440-a6fb5895adfa" />
+
+<img width="2000" height="1000" alt="E4_validation_metrics" src="https://github.com/user-attachments/assets/755d59a6-308c-438b-b6b2-e18a8c7674cf" />
+
+<img width="2000" height="1000" alt="E4_threshold_optimization" src="https://github.com/user-attachments/assets/94e9c7ed-3d79-49f3-96d9-ec9ca90b6ff1" />
+
+### Experiment 5 — Custom Rotation Test-Time Augmentation
+
+A custom rotation-based TTA pipeline was implemented
+to investigate robustness to arbitrary camera orientations.
+
+Each image was processed at four orientations:
+
+- 0 degrees
+- 90 degrees
+- 180 degrees
+- 270 degrees
+
+Predicted bounding boxes were transformed back into the
+original image coordinate system using inverse rotation
+transformations.
+
+The coordinate transformations were verified using
+numerical unit tests before inference.
+
+Predictions from all orientations were combined using
+global Non-Maximum Suppression.
+
+#### Results
+
+| Metric | E4 | E5 |
+|---|---:|---:|
+| Precision | 0.722363 | 0.704792 |
+| Recall | 0.589878 | 0.590665 |
+| Local blended F1 | 0.657784 | 0.650267 |
+| Kaggle public score | 0.75743 | 0.73712 |
+
+The experiment produced a small increase in recall,
+but the reduction in precision outweighed this benefit.
+
+Possible explanations include redundant detections,
+additional false positives, and rotation robustness
+already acquired during fine-tuning.
+
+Rotation TTA was not included in the final pipeline.
+
+<img width="2000" height="1000" alt="E5_rotation_tta" src="https://github.com/user-attachments/assets/9c64e327-c901-4f89-89fb-0a2a391eab50" />
+
+### Experiment 6 — Overlapping Tiled Inference
+
+To investigate small-object detection, each image was
+divided into four overlapping tiles.
+
+Each tile covered 60% of the original image width and
+height, producing an overlap of 20% of the original
+image dimension between adjacent tiles.
+
+The pipeline included:
+
+- Full-image inference at 1280 pixels.
+- Tile inference at 960 pixels.
+- Mapping tile predictions to original image coordinates.
+- Combining full-image and tile predictions.
+- Global NMS and confidence threshold optimization.
+
+#### Results
+
+- Local blended F1: approximately 0.661
+- Kaggle public score: 0.67211
+
+Although tiled inference slightly improved local
+validation performance, it substantially reduced
+competition performance.
+
+Potential explanations include domain shift, loss of
+global context, duplicate detections, and differences
+in confidence distributions.
+
+This experiment demonstrated that improvements on an
+external validation dataset do not necessarily
+generalize to the competition benchmark.
+
+Tiled inference was excluded from the final solution.
+
+<img width="2000" height="1000" alt="E6_inference_comparison" src="https://github.com/user-attachments/assets/c0ae352b-bf20-4c42-b331-c06a33c0252f" />
+
+### Experiment 7 — Model Ensemble with Weighted Boxes Fusion
+
+The pretrained and aerial fine-tuned YOLO11m models
+were combined to investigate whether their complementary
+predictions could improve human detection.
+
+Unlike NMS, which suppresses overlapping predictions,
+Weighted Boxes Fusion combines overlapping bounding
+boxes using confidence-weighted coordinate averaging.
+
+A systematic search over 36 configurations was conducted
+on the VisDrone validation dataset.
+
+The search investigated:
+
+- Relative model weights.
+- Bounding box fusion IoU thresholds.
+- Output confidence thresholds.
+
+#### Optimal Configuration
+
+| Parameter | Value |
+|---|---:|
+| Pretrained model weight | 1 |
+| Fine-tuned model weight | 1 |
+| Pretrained confidence | 0.04 |
+| Fine-tuned confidence | 0.15 |
+| Fusion IoU | 0.35 |
+| Output confidence | 0.05 |
+| Input resolution | 1280 |
+
+#### Results
+
+| Metric | E4 | E7 |
+|---|---:|---:|
+| Hard F1 | 0.649433 | 0.673029 |
+| Soft F1 | 0.666135 | 0.684611 |
+| Precision | 0.722363 | 0.708175 |
+| Recall | 0.589878 | 0.641206 |
+| Local blended F1 | 0.657784 | 0.678820 |
+| Kaggle public score | 0.75743 | 0.79575 |
+
+The ensemble increased recall by approximately
+5.13 percentage points while maintaining a
+relatively strong precision.
+
+This suggests that the pretrained model retained
+useful detection capabilities that complemented
+the aerial fine-tuned model.
+
+Equal model weights achieved the best observed
+validation performance.
+
+E7 was selected as the final detection pipeline.
+
+<img width="1600" height="1000" alt="E7_ensemble_heatmap" src="https://github.com/user-attachments/assets/7d73e1d7-df37-4cd1-8812-04706a7a71ef" />
+
+### Experiment 8 — Extended Fusion IoU Optimization
+
+Since the best fusion IoU in Experiment 7 occurred
+at the lower boundary of the tested range, an
+extended parameter search was conducted.
+
+Fusion IoU values between 0.15 and 0.35 were
+evaluated while maintaining equal model weights.
+
+The results confirmed that 0.35 remained the best
+observed fusion IoU among the evaluated configurations.
+
+Lower thresholds reduced performance, potentially
+because predictions corresponding to different
+nearby humans were merged.
+
+No additional competition submission was required,
+as the extended search did not improve upon E7.
+
+<img width="1800" height="1000" alt="E8_fusion_optimization" src="https://github.com/user-attachments/assets/ee407e2e-6d5e-4204-b525-8ee73c07ffeb" />
+
+
+## 8. Final Experimental Results
+
+| Experiment | Local F1 | Kaggle Public Score |
+|---|---:|---:|
+| E1 — Pretrained baseline | 0.266290 | 0.55109 |
+| E2 — High-resolution inference | 0.499251 | Not submitted |
+| E3 — Confidence optimization | 0.633276 | 0.70867 |
+| E4 — Aerial fine-tuning | 0.657784 | 0.75743 |
+| E5 — Rotation TTA | 0.650267 | 0.73712 |
+| E6 — Tiled inference | ~0.661 | 0.67211 |
+| E7 — Weighted Boxes Fusion | **0.678820** | **0.79575** |
+| E8 — Extended fusion search | 0.678820 | Not submitted |
+
+### Best Performance
+
+- Initial public score: 0.55109
+- Best public score: 0.79575
+- Absolute improvement: 0.24466
+- Relative improvement: 44.39%
+- Best local blended F1: 0.678820
+
+The most effective improvements resulted from
+high-resolution inference, confidence optimization,
+domain-specific fine-tuning, and model ensembling.
+
+Rotation TTA and tiled inference were evaluated but
+excluded from the final pipeline because they did
+not improve competition performance.
+
+<img width="3600" height="1800" alt="final_performance" src="https://github.com/user-attachments/assets/bc9e08bd-609d-4722-ae6d-a85e48c4aa2f" />
+
+### Final Detection Pipeline
+
+```mermaid
+flowchart TD
+    A[Input Image] --> B[COCO-pretrained YOLO11m]
+    A --> C[VisDrone fine-tuned YOLO11m]
+    B --> D[Confidence Threshold 0.04]
+    C --> E[Confidence Threshold 0.15]
+    D --> F[Weighted Boxes Fusion]
+    E --> F
+    F --> G[Output Confidence 0.05]
+    G --> H[Final Human Detections]
+    H --> I[YOLO-format CSV Export]
+```
+
+### Qualitative Results
+
+The following example demonstrates the final ensemble
+pipeline on an aerial image from the external
+VisDrone validation dataset.
+
+The bounding boxes were generated automatically by
+the standalone inference script.
+
+<img width="3179" height="1848" alt="E7_final_demo" src="https://github.com/user-attachments/assets/974b1941-12cd-4660-a991-728af91af246" />
 
 
 ## 9. Submission Format
@@ -225,37 +484,136 @@ Images without detections are represented using a whitespace string to satisfy t
 - Google Colab
 - Kaggle Notebooks
 
-## 11. Reproducibility
+## 11. Reproducibility and Usage
 
-The experiments use publicly available datasets and pretrained model weights.
+### Repository Structure
 
-Training configurations, preprocessing procedures, evaluation code, and inference parameters are documented in the project notebook.
+```text
+Aerial-Human-Detection/
+├── notebooks/
+├── figures/
+├── results/
+├── weights/
+├── inference.py
+├── requirements.txt
+├── final_config.json
+├── human_data.yaml
+├── .gitignore
+└── README.md
+```
 
-A fixed random seed is used for training experiments.
+### Installation
+
+Create a Python virtual environment and install the
+required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Model Weights
+
+The inference pipeline requires the following checkpoints:
+
+- `weights/yolo11m.pt`
+- `weights/E4_aerial_best.pt`
+
+### Run Inference
+
+```bash
+python inference.py --images demo --output demo_result.csv --device cpu
+```
+
+For GPU inference:
+
+```bash
+python inference.py --images demo --output demo_result.csv --device 0
+```
+
+The input directory should contain the images to process.
+
+The standalone script generates normalized bounding box
+predictions using the final ensemble configuration.
+
+### Implementation Verification
+
+The standalone inference pipeline was successfully
+executed on a VisDrone validation image using Kaggle.
+
+The test generated a valid prediction CSV and
+10 human predictions, which were visualized on the
+original aerial image.
+
+This smoke test verifies basic pipeline execution.
+Exact reproduction of the full competition score
+using the standalone script has not yet been verified.
+
+### Experimental Notebooks
+
+- `01_baseline_and_validation.ipynb`
+- `02_training_and_ensemble.ipynb`
+
+The notebooks document data preparation, training,
+evaluation, optimization, and experimental analysis.
 
 ## 12. Limitations
 
-- VisDrone does not perfectly represent the competition's image distribution.
-- The local evaluator is an approximation based on the published metric description rather than the official evaluator implementation.
-- Ignored regions in VisDrone are not yet fully handled by the custom evaluation metric.
-- Hyperparameters are optimized on the validation dataset; their performance may differ on unseen data.
-- Computational resources and training time limit the number of experiments.
+- VisDrone does not perfectly represent the competition
+  image distribution.
+- The custom evaluation metric is an approximation
+  of the published competition metric.
+- Ignored regions in VisDrone are not fully handled
+  by the local evaluator.
+- Repeated hyperparameter searches on the same
+  validation set may introduce validation overfitting.
+- Some early experiments were conducted in a different
+  environment with slightly different evaluation settings.
+- The final ensemble requires two model forward passes,
+  increasing computational cost.
+- Training was constrained by available GPU resources
+  and the configured time budget.
+- The reported competition results are public
+  leaderboard scores, not final private scores.
 
-## 13. Planned Improvements
+## 13. Future Work
 
-- Rotation-based test-time augmentation.
-- Overlapping tiled inference.
-- Fine-tuned model confidence calibration.
-- Model ensembling and Weighted Boxes Fusion.
-- Detailed failure analysis on external labeled validation images.
+- Evaluate generalization on additional independent
+  aerial human detection datasets.
+- Investigate confidence calibration across models.
+- Explore more computationally efficient ensemble methods.
+- Improve handling of ignored and crowded regions.
+- Investigate lightweight deployment on autonomous
+  aerial robotic systems.
+- Conduct detailed error analysis across object sizes,
+  lighting conditions, and camera orientations.
 
 ## 14. References
 
-- Ultralytics: https://github.com/ultralytics/ultralytics
-- VisDrone Dataset: https://github.com/VisDrone/VisDrone-Dataset
-- COCO Dataset: https://cocodataset.org/
-- Competition: https://www.kaggle.com/competitions/human-detection-ae
+- Ultralytics YOLO:
+  https://github.com/ultralytics/ultralytics
 
+- VisDrone Dataset:
+  https://github.com/VisDrone/VisDrone-Dataset
+
+- COCO Dataset:
+  https://cocodataset.org/
+
+- Weighted Boxes Fusion implementation:
+  https://github.com/ZFTurbo/Weighted-Boxes-Fusion
+
+- Weighted Boxes Fusion paper:
+  https://arxiv.org/abs/1910.13302
+
+- Human Detection AE Competition:
+  https://www.kaggle.com/competitions/human-detection-ae
+  
 ## Project Status
 
-Work in progress. Current results represent intermediate experiments rather than the final optimized solution.
+Completed — Final competition solution selected
+and standalone inference pipeline tested.
+
+**Final selected method:** E7 — Weighted Boxes Fusion
+
+**Best Kaggle Public Score:** 0.79575
+
+**Relative improvement over baseline:** 44.39%
