@@ -1,0 +1,19 @@
+{
+    "experiment": "E7",
+    "method": "Weighted Boxes Fusion",
+    "pretrained_model": "yolo11m.pt",
+    "finetuned_model": "E4_aerial_best.pt",
+    "image_size": 1280,
+    "pretrained_confidence": 0.04,
+    "finetuned_confidence": 0.15,
+    "nms_iou": 0.45,
+    "max_det": 300,
+    "model_weights": [
+        1,
+        1
+    ],
+    "fusion_iou": 0.35,
+    "output_confidence": 0.05,
+    "local_score": 0.6788195644669469,
+    "kaggle_public_score": 0.79575
+}

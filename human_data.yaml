@@ -1,0 +1,6 @@
+names:
+  0: human
+nc: 1
+path: /kaggle/working/visdrone
+train: VisDrone2019-DET-train/images
+val: VisDrone2019-DET-val/images

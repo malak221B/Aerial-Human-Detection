@@ -1,0 +1,7 @@
+ultralytics==8.4.218
+ensemble-boxes
+numpy
+pandas
+matplotlib
+opencv-python
+tqdm

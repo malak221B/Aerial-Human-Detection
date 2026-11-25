@@ -1,0 +1,9 @@
+Experiment,Method,Local F1,Kaggle Public Score
+E1,Pretrained Baseline,0.26629,0.55109
+E2,High-Resolution Inference,0.499251,
+E3,Confidence Optimization,0.633276,0.70867
+E4,Aerial Fine-tuning,0.6577835633279705,0.75743
+E5,Rotation TTA,0.6502669126807672,0.73712
+E6,Tiled Inference,0.6614760891574136,0.67211
+E7,Weighted Boxes Fusion,0.6788195644669469,0.79575
+E8,Extended Fusion Search,0.6788195644669469,
